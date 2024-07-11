@@ -42,7 +42,6 @@ namespace :load do
     set :teller_environment,      ->{ fetch :rails_env, fetch(:stage, "production") }
     set :teller_shared_path,      ->{ fetch(:shared_path) }
     set :teller_identifier,       ->{ fetch(:application) }
-    append :default_env, "#{fetch(:teller_identifier)}"  
     append :linked_files, ".env.#{fetch(:teller_environment)}"
   end
 end
