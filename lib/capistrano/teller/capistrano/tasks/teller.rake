@@ -9,7 +9,7 @@ namespace :teller do
   task :copy do
       run_locally do
         with(rails_env: fetch(:teller_environment), normalized_repo: fetch(:teller_identifier) )do
-          execute :touch, ".env.#{fetch(:teller_environment)}"
+          execute :touch, fetch(:teller_environment_file)
           teller "--config #{fetch(:teller_config)}", :copy, "--from #{fetch(:teller_source_provider)}", "--to #{fetch(:teller_target_provider)}"
         end
       end
@@ -17,11 +17,13 @@ namespace :teller do
 
   task :upload_environment_file do
     on roles(:teller) do
-      upload! ".env.#{fetch(:teller_environment)}", "#{fetch(:teller_shared_path)}/config/teller.yml"
+      upload! fetch(:teller_environment_file), "#{fetch(:teller_shared_path)}/#{fetch(:teller_environment_file)}"
     end
+  end
 
+  task :remove_environment_file do
     run_locally do
-      execute :rm, ".env.#{fetch(:teller_environment)}"
+      execute :rm, fetch(:teller_environment_file)
     end
   end
 
@@ -29,6 +31,7 @@ end
 
 before "deploy:symlink:linked_files", "teller:copy"
 after "teller:copy", "teller:upload_environment_file"
+after "deploy:cleanup", "teller:remove_environment_file"
 
 namespace :load do
   task :defaults do
@@ -42,6 +45,7 @@ namespace :load do
     set :teller_environment,      ->{ fetch :rails_env, fetch(:stage, "production") }
     set :teller_shared_path,      ->{ fetch(:shared_path) }
     set :teller_identifier,       ->{ fetch(:application) }
+    set :teller_environment_file, ->{ ".env.#{fetch(:teller_environment)}" }
     append :linked_files, ".env.#{fetch(:teller_environment)}"
   end
 end
