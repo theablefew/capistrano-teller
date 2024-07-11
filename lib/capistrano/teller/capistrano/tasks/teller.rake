@@ -2,14 +2,13 @@
 namespace :teller do
 
   def teller(*args)
-    puts "Executing: #{fetch(:teller_command)}"
     execute fetch(:teller_command), *args
   end
 
   desc "Copy the .env.environment to the server"
   task :copy do
       run_locally do
-        with rails_env: fetch(:teller_environment) do
+        with(rails_env: fetch(:teller_environment), normalized_repo: fetch(:teller_identifier) )do
           execute :touch, ".env.#{fetch(:teller_environment)}"
           teller "--config #{fetch(:teller_config)}", :copy, "--from #{fetch(:teller_source_provider)}", "--to #{fetch(:teller_target_provider)}"
         end
@@ -45,6 +44,8 @@ namespace :load do
     set :teller_command,          ->{ fetch(:teller_command_path).chomp }
     set :teller_environment,      ->{ fetch :rails_env, fetch(:stage, "production") }
     set :teller_shared_path,      ->{ fetch(:shared_path) }
+    set :teller_identifier,       ->{ fetch(:application) }
+    append :default_env, "#{fetch(:teller_identifier)}"  
     append :linked_files, ".env.#{fetch(:teller_environment)}"
   end
 end
