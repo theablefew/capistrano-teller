@@ -29,7 +29,7 @@ namespace :teller do
 
 end
 
-before "deploy:symlink:linked_files", "teller:copy"
+before "deploy:check:linked_files", "teller:copy"
 after "teller:copy", "teller:upload_environment_file"
 after "deploy:cleanup", "teller:remove_environment_file"
 
