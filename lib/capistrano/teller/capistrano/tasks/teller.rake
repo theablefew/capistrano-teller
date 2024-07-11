@@ -17,11 +17,8 @@ namespace :teller do
 
   task :upload_environment_file do
     on roles(:teller) do
-      puts "Uploading .env.#{fetch(:teller_environment)} to #{fetch(:teller_shared_path)}/config/teller.yml"
       upload! ".env.#{fetch(:teller_environment)}", "#{fetch(:teller_shared_path)}/config/teller.yml"
     end
-
-    puts "#{fetch(:linked_files)}"
 
     run_locally do
       execute :rm, ".env.#{fetch(:teller_environment)}"
