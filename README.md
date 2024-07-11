@@ -1,24 +1,48 @@
 # Capistrano::Teller
 
-TODO: Delete this and the text below, and describe your gem
-
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/capistrano/teller`. To experiment with that code, run `bin/console` for an interactive prompt.
-
 ## Installation
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
+```
+bundle add capistrano-teller
+```
 
-Install the gem and add to the application's Gemfile by executing:
+**Add .teller.yml**
+```
+providers:
+  aws_secretsmanager:
+    kind: aws_secretsmanager
+    maps:
+      - id: aws
+        path: {{ get_env(name="RAILS_ENV", default="development") }}/{{get_env(name="NORMALIZED_REPO", default='application')}}/environment
+  dotenv:
+    kind: dotenv
+    maps:
+      - id: 'dotenv'
+        path: .env.{{ get_env(name="RAILS_ENV", default="development") }}
+```
 
-    $ bundle add UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
 
-If bundler is not being used to manage dependencies, install the gem by executing:
-
-    $ gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
 
 ## Usage
 
-TODO: Write usage instructions here
+deploy.rb
+```
+set :rails_env, -> { fetch(:stage) }
+
+set :teller_config, -> { File.join(Dir.pwd, '.teller.yml')}
+set :teller_environment, -> { fetch(:rails_env) }
+set :teller_source_provider, 'aws_secretsmanager/aws'
+set :teller_target_provider, 'dotenv/dotenv'
+set :teller_identifier, -> { fetch(:application) }
+
+server 'i-404004040b', roles: [:whenever, :app, :web, :teller]
+```
+
+```
+cap staging deploy
+```
+
+Will generate `.env.#{:rails_env}` locally and copy it to the `shared_path` and link to the `current_release`
 
 ## Development
 
