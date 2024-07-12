@@ -5,7 +5,7 @@ namespace :teller do
     execute fetch(:teller_command), *args
   end
 
-  desc "Copy the .env.environment to the server"
+  desc "Copy the .env.{environment} to the local machine"
   task :copy do
       run_locally do
         with(rails_env: fetch(:teller_environment), normalized_repo: fetch(:teller_identifier) )do
@@ -15,12 +15,14 @@ namespace :teller do
       end
   end
 
+  desc "Upload the .env.{environment} file to the server"
   task :upload_environment_file do
     on roles(:teller) do
       upload! fetch(:teller_environment_file), "#{fetch(:teller_shared_path)}/#{fetch(:teller_environment_file)}"
     end
   end
 
+  desc "Remove the .env.{environment} file from the local machine"
   task :remove_environment_file do
     run_locally do
       execute :rm, fetch(:teller_environment_file)
@@ -37,9 +39,9 @@ namespace :load do
   task :defaults do
     set :teller_roles,            ->{ [:teller] }
     set :teller_config,           ->{ ".teller.yml" }
-    set :teller_source_provider,  ->{ :aws_secretsmanager }
+    set :teller_source_provider,  ->{ 'aws_secretsmanager/aws' }
     set :teller_command_path,     ->{ `which teller` }
-    set :teller_target_provider,  ->{ :dotenv }
+    set :teller_target_provider,  ->{ 'dotenv/dotenv' }
     set :teller_stage,            ->{ fetch(:rails_env, :development) }
     set :teller_command,          ->{ fetch(:teller_command_path).chomp }
     set :teller_environment,      ->{ fetch :rails_env, fetch(:stage, "production") }
